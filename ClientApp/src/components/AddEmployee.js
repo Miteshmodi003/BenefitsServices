@@ -11,7 +11,7 @@ export class AddEmployee extends Component {
         firstname: null,
         lastname: null,
         errors: { firstName: null, lastName: null },
-        employee: {},
+        employee: [],
         dependents: [],
         displayError: false,
     };
@@ -76,21 +76,15 @@ export class AddEmployee extends Component {
                 dependents: newDependents,
             };
 
-            this.setState({ employee: person });
-
             const returnedValue = await fetch("/api/benefits", {
-                method: "post",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: { ...this.state.employee }, //If the route is incorrect please correct it
+
+                body: JSON.stringify(person), //If the route is incorrect please correct it
             });
 
-            this.setState({ dependents: [] });
-            this.setState({ firstName: null });
-            this.setState({ lastName: null });
-            this.setState({ employee: {} });
+            alert("The employee is added, check in the overview page");
         }
-        
-        
     };
     turnFirstToCapital = (value) => {
         if (value) {

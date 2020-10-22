@@ -27,9 +27,10 @@ export class Overview extends Component {
                 <tbody>
                     {employees.map(employee =>
                         <tr key={employee.id}>
+                            <td>{employee.id}</td>
                             <td>{employee.firstName + " " + employee.lastName}</td>
                             <td>{employee.dependents.length}</td>
-                            <td>{employee.benefitsCost.biweeklyDeduction}</td>
+                            <td>{employee.benefitsCost.biWeeklyDeduction}</td>
                             <td>{employee.benefitsCost.yearlyBenefitsCost}</td>
                         </tr>
                     )}
