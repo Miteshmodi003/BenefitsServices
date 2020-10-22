@@ -12,3 +12,26 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+.unshow ~ p{
+  display:none
+}
+
+.show ~ p{
+  color:red;
+  display: block;
+}
+
+.top{
+  position: absolute;
+  top:50px;
+  padding:10px;
+  z-index: 100;
+}
+.delete {
+  cursor: pointer;
+}
+
+.select-dropdown {
+    display: none !important;
+}

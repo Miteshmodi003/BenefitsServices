@@ -1,61 +1,156 @@
 ﻿import React, { Component } from "react";
+import AddDependent from "./AddDependent";
+import { AutoInit } from "materialize-css";
+import DisplayError from "./DisplayError";
+import DependentTable from "./DependentTable";
+import * as V from "uuid";
 
 export class AddEmployee extends Component {
-    // Setting the component's initial state
     state = {
-        firstName: "",
-        lastName: ""
+        employee_id: V.v1(),
+        firstname: null,
+        lastname: null,
+        errors: { firstName: null, lastName: null },
+        employee: {},
+        dependents: [],
+        displayError: false,
     };
-
-    handleInputChange = event => {
-        // Getting the value and name of the input which triggered the change
-        let value = event.target.value;
-        const name = event.target.name;
-
-        // Updating the input's state
-        this.setState({
-            [name]: value
-        });
-    };
-
-    handleFormSubmit = event => {
-        // Preventing the default behavior of the form submit (which is to refresh the page)
-        event.preventDefault();
-        if (!this.state.firstName || !this.state.lastName) {
-            alert("Fill out your first and last name please!");
-
-            this.setState({
-                firstName: "",
-                lastName: ""
-            });
-        };
+    componentDidMount() {
+        AutoInit();
     }
 
+    handleAddDependent = (dependent) => {
+        dependent = {
+            ...dependent,
+            id: V.v1(),
+        };
+        this.setState({ dependents: [...this.state.dependents, dependent] });
+    };
+    handleChange = (e) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        let errors = this.state.errors;
+        switch (name) {
+            case "firstname":
+                errors.firstName = /^[A-Za-z]*$/.test(value)
+                    ? null
+                    : "No special character,number or space is allowed in name";
+                break;
+
+            case "lastname":
+                errors.lastName = /^[A-Za-z]*$/.test(value)
+                    ? null
+                    : "No special character,number or space is allowed in lastname";
+                break;
+        }
+        this.setState({ errors, [name]: this.turnFirstToCapital(value) }, () => { });
+    };
+    handleDelete = (id) => {
+        let prevDependents = [...this.state.dependents];
+        const newDependents = prevDependents.filter(
+            (dependent) => dependent.id != id
+        );
+        this.setState({ dependents: newDependents });
+    };
+    handleSubmit = async (e) => {
+        e.preventDefault();
+        e.target.firstname.value = "";
+        e.target.lastname.value = "";
+        if (
+            this.state.errors.firstName ||
+            this.state.errors.lastName ||
+            !this.state.firstname ||
+            !this.state.lastname
+        ) {
+            this.setState({ displayError: true });
+            setTimeout(() => this.setState({ displayError: false }), 2000);
+        } else {
+            const newDependents = this.state.dependents.map((dependent) => {
+                delete dependent.id;
+                return dependent;
+            });
+
+            let person = {
+                firstName: this.state.firstname,
+                lastName: this.state.lastname,
+                dependents: newDependents,
+            };
+
+            this.setState({ employee: person });
+
+            const returnedValue = await fetch("/api/benefits", {
+                method: "post",
+                headers: { "Content-Type": "application/json" },
+                body: { ...this.state.employee }, //If the route is incorrect please correct it
+            });
+
+            this.setState({ dependents: [] });
+            this.setState({ firstName: null });
+            this.setState({ lastName: null });
+            this.setState({ employee: {} });
+        }
+        
+        
+    };
+    turnFirstToCapital = (value) => {
+        if (value) {
+            var splitted = value.split("");
+            splitted[0] = splitted[0].toUpperCase();
+            return splitted.join("");
+        }
+        return value;
+    };
     render() {
-        // Notice how each input has a `value`, `name`, and `onChange` prop
         return (
             <div>
-                <p>
-                    Hello {this.state.firstName} {this.state.lastName}
-                </p>
-                <form className="form">
-                    <input
-                        value={this.state.firstName}
-                        name="firstName"
-                        onChange={this.handleInputChange}
-                        type="text"
-                        placeholder="First Name"
-                    />
-                    <input
-                        value={this.state.lastName}
-                        name="lastName"
-                        onChange={this.handleInputChange}
-                        type="text"
-                        placeholder="Last Name"
-                    />
+                {this.state.displayError && <DisplayError />}
 
-                    <button onClick={this.handleFormSubmit}>Submit</button>
-                </form>
+                <div className="container section">
+                    <form className="white section" onSubmit={this.handleSubmit}>
+                        <h5 className="grey-text text-darken">Create an employee</h5>
+                        <div className="input-field">
+                            <label htmlFor="firstname">First Name</label>
+                            <input
+                                type="text"
+                                id="firstname"
+                                name="firstname"
+                                autoCapitalize="words"
+                                className={this.state.errors.firstName ? "show" : "unshow"}
+                                onChange={this.handleChange}
+                            />
+                            <p>{this.state.errors.firstName}</p>
+                        </div>
+                        <div className="input-field">
+                            <label htmlFor="lastname">Last Name</label>
+                            <input
+                                type="text"
+                                id="lastname"
+                                name="lastname"
+                                autoCapitalize="words"
+                                className={this.state.errors.lastName ? "show" : "unshow"}
+                                onChange={this.handleChange}
+                            />
+                            <p>{this.state.errors.lastName}</p>
+                        </div>
+                        {this.state.dependents.length ? (
+                            <DependentTable
+                                dependents={this.state.dependents}
+                                handleDelete={this.handleDelete}
+                            />
+                        ) : null}
+                        <a className="modal-trigger" href="#dependentModal">
+                            <button type="button" className="btn">
+                                {this.state.dependents.length
+                                    ? "Add more dependents"
+                                    : "Add Dependent"}
+                            </button>
+                        </a>
+                        <div className="input-field">
+                            <button className="btn lighten-1">Create</button>
+                        </div>
+                    </form>
+                    <AddDependent handleAddDependent={this.handleAddDependent} />
+                </div>
             </div>
         );
     }
