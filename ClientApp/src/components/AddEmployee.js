@@ -4,6 +4,7 @@ import { AutoInit } from "materialize-css";
 import DisplayError from "./DisplayError";
 import DependentTable from "./DependentTable";
 import * as V from "uuid";
+import { Redirect } from "react-router-dom";
 
 export class AddEmployee extends Component {
     state = {
@@ -14,6 +15,7 @@ export class AddEmployee extends Component {
         employee: [],
         dependents: [],
         displayError: false,
+        redirect: null,
     };
     componentDidMount() {
         AutoInit();
@@ -82,8 +84,13 @@ export class AddEmployee extends Component {
 
                 body: JSON.stringify(person), //If the route is incorrect please correct it
             });
+            this.setState({ redirect: "/overview" });
 
-            alert("The employee is added, check in the overview page");
+            // this.setState({ dependents: [] });
+            // this.setState({ firstName: null });
+            // this.setState({ lastName: null });
+            // this.setState({ employee: {} });
+            // alert("The employee is added, check in the overview page");
         }
     };
     turnFirstToCapital = (value) => {
@@ -95,6 +102,9 @@ export class AddEmployee extends Component {
         return value;
     };
     render() {
+        if (this.state.redirect) {
+            return <Redirect to={this.state.redirect} />;
+        }
         return (
             <div>
                 {this.state.displayError && <DisplayError />}
