@@ -86,11 +86,6 @@ export class AddEmployee extends Component {
             });
             this.setState({ redirect: "/overview" });
 
-            // this.setState({ dependents: [] });
-            // this.setState({ firstName: null });
-            // this.setState({ lastName: null });
-            // this.setState({ employee: {} });
-            // alert("The employee is added, check in the overview page");
         }
     };
     turnFirstToCapital = (value) => {
